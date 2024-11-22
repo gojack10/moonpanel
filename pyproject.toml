@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moonpanel"
+version = "0.1.0"
+description = "A real-time crypto trade monitor"
+authors = [{name = "Your Name", email = "your.email@example.com"}]
+license = {text = "MIT"}
+requires-python = ">=3.7"
+dependencies = [
+    "websockets",
+    "termcolor",
+    "pytz"
+]
+
+[project.scripts]
+moonpanel = "moonpanel.__main__:main"
