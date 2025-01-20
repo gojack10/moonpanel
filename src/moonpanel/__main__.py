@@ -1,7 +1,7 @@
 import asyncio
 import argparse
 import signal
-from core import MoonPanel
+from .core import MoonPanel
 
 async def shutdown(signal, loop, panel):
     """Cleanup tasks tied to the service's shutdown."""

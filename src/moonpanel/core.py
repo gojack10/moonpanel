@@ -14,6 +14,9 @@ class MoonPanel:
         self.websocket_url_base = 'wss://fstream.binance.com/ws/'
         self.trade_counts = defaultdict(lambda: {'buys': 0, 'sells': 0})
         self.last_prices = defaultdict(float)
+        self.reference_prices = defaultdict(float)
+        self.last_reference_update = defaultdict(float)
+        self.REFERENCE_UPDATE_INTERVAL = 5  # Update reference price every 5 seconds
         self.IMPACT_DELAY = 2
 
     async def binance_trade_stream(self, uri, symbol):
@@ -59,7 +62,7 @@ class MoonPanel:
         
         if self.show_percent:
             percent_change = self.calculate_percent_change(symbol, price)
-            trade_str += f" │ {percent_change:+.6f}%"
+            trade_str += f" │ {percent_change:+.4f}%"
         
         if self.show_ratio:
             buy_ratio, sell_ratio = self.calculate_ratios(symbol)
@@ -79,10 +82,17 @@ class MoonPanel:
         cprint(f"{prefix}{trade_str}", 'white', f'on_{color}', attrs=attrs)
 
     def calculate_percent_change(self, symbol, current_price):
-        previous_price = self.last_prices[symbol.lower() + 'usdt']
-        if previous_price == 0:
+        symbol_key = symbol.lower() + 'usdt'
+        current_time = datetime.now().timestamp()
+        
+        # Initialize or update reference price if needed
+        if (self.reference_prices[symbol_key] == 0 or 
+            current_time - self.last_reference_update[symbol_key] > self.REFERENCE_UPDATE_INTERVAL):
+            self.reference_prices[symbol_key] = current_price
+            self.last_reference_update[symbol_key] = current_time
             return 0.0
-        return ((current_price - previous_price) / previous_price) * 100
+            
+        return ((current_price - self.reference_prices[symbol_key]) / self.reference_prices[symbol_key]) * 100
 
     def calculate_ratios(self, symbol):
         symbol = symbol.lower() + 'usdt'
